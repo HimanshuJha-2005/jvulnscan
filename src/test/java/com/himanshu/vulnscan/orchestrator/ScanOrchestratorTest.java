@@ -14,7 +14,7 @@ class ScanOrchestratorTest {
 
     @Test
     void testScanConfig() {
-        ScanConfig config = new ScanConfig("top100", 500, 2000, true, "quick", "CVE-2021-44228", "ANON-FTP", false);
+        ScanConfig config = new ScanConfig("top100", 500, 2000, true, "quick", "CVE-2021-44228", "ANON-FTP", false, false);
         assertEquals("top100", config.ports());
         assertEquals(500, config.maxThreads());
         assertEquals(2000, config.timeoutMs());

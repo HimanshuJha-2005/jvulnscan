@@ -63,10 +63,15 @@ public class ScanCommand implements Callable<Integer> {
     @Option(names = {"--no-progress"}, description = "Disable progress bar")
     private boolean noProgress = false;
 
+    @Option(names = {"--active"},
+            description = "Enable intrusive checks (default-credential attempts, payload injection). "
+                    + "Only use against systems you are authorised to test.")
+    private boolean activeChecks = false;
+
     @Override
     public Integer call() {
         ScanOrchestrator.ScanConfig config = new ScanOrchestrator.ScanConfig(
-                ports, threads, timeout, !noBannerGrab, profile, checks, excludeChecks, noPing
+                ports, threads, timeout, !noBannerGrab, profile, checks, excludeChecks, noPing, activeChecks
         );
 
         ScanOrchestrator orchestrator = new ScanOrchestrator(config);

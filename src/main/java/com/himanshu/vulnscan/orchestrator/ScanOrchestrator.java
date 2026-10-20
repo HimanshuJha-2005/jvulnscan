@@ -34,7 +34,7 @@ public class ScanOrchestrator {
         this.config = config;
         this.portScanner = new PortScanner(config.timeoutMs(), config.maxThreads(), config.bannerGrab());
         this.serviceDetector = new ServiceDetector();
-        this.checkRegistry = new CheckRegistry();
+        this.checkRegistry = new CheckRegistry(config.activeChecks());
     }
 
     public void setProgressCallback(Consumer<ScanProgress> callback) {
@@ -190,7 +190,8 @@ public class ScanOrchestrator {
             String profile,
             String checks,
             String excludeChecks,
-            boolean noPing
+            boolean noPing,
+            boolean activeChecks
     ) {}
 
     public record ScanProgress(

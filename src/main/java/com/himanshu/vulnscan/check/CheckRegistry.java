@@ -34,8 +34,18 @@ public final class CheckRegistry {
     private final Map<String, VulnerabilityCheck> checks = new ConcurrentHashMap<>();
     private final Set<String> enabledChecks = ConcurrentHashMap.newKeySet();
     private final Set<String> disabledChecks = ConcurrentHashMap.newKeySet();
+    private final boolean activeChecks;
 
     public CheckRegistry() {
+        this(false);
+    }
+
+    /**
+     * @param activeChecks enables intrusive checks (credential attempts,
+     *                     payload injection) that are off by default
+     */
+    public CheckRegistry(boolean activeChecks) {
+        this.activeChecks = activeChecks;
         loadBuiltInChecks();
         loadExternalChecks();
     }
@@ -44,7 +54,7 @@ public final class CheckRegistry {
         register(new Log4ShellCheck());
         register(new BlueKeepCheck());
         register(new AnonymousFtpCheck());
-        register(new DefaultCredsCheck());
+        register(new DefaultCredsCheck(activeChecks));
         register(new RedisUnauthCheck());
         register(new MongoOpenCheck());
         register(new SslTlsCheck());

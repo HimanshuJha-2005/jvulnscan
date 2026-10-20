@@ -60,35 +60,41 @@ public final class HttpProbe {
      * likely for the port first and falling back to the other one.
      */
     public static Optional<Response> fetch(String host, int port, String path, int timeoutMs) {
+        return fetch(host, port, path, Map.of(), timeoutMs);
+    }
+
+    /**
+     * Fetches {@code path} with additional request headers. The Host header is
+     * always derived from the target so a request cannot be redirected at the
+     * protocol level.
+     */
+    public static Optional<Response> fetch(String host, int port, String path,
+                                           Map<String, String> headers, int timeoutMs) {
         if (host == null || host.isBlank()) {
             return Optional.empty();
         }
 
         boolean tlsFirst = TLS_PORTS.contains(port);
-        Optional<Response> response = fetch(host, port, path, tlsFirst ? "https" : "http", timeoutMs);
+        Optional<Response> response = fetch(host, port, path, headers, tlsFirst ? "https" : "http", timeoutMs);
         if (response.isPresent()) {
             return response;
         }
-        return fetch(host, port, path, tlsFirst ? "http" : "https", timeoutMs);
+        return fetch(host, port, path, headers, tlsFirst ? "http" : "https", timeoutMs);
     }
 
     public static boolean isTlsPort(int port) {
         return TLS_PORTS.contains(port);
     }
 
-    private static Optional<Response> fetch(String host, int port, String path, String scheme, int timeoutMs) {
+    private static Optional<Response> fetch(String host, int port, String path, Map<String, String> headers,
+                                            String scheme, int timeoutMs) {
         try (Socket raw = new Socket()) {
             raw.connect(new InetSocketAddress(host, port), timeoutMs);
             raw.setSoTimeout(timeoutMs);
 
             Socket socket = "https".equals(scheme) ? startTls(raw, host, port, timeoutMs) : raw;
 
-            String request = "GET " + (path == null || path.isBlank() ? "/" : path) + " HTTP/1.1\r\n"
-                    + "Host: " + hostHeader(host, port, scheme) + "\r\n"
-                    + "User-Agent: VulnScan/1.0\r\n"
-                    + "Accept: */*\r\n"
-                    + "Connection: close\r\n"
-                    + "\r\n";
+            String request = buildRequest(host, port, path, scheme, headers);
 
             OutputStream out = socket.getOutputStream();
             out.write(request.getBytes(StandardCharsets.US_ASCII));
@@ -99,6 +105,26 @@ public final class HttpProbe {
         } catch (IOException | GeneralSecurityException | RuntimeException e) {
             return Optional.empty();
         }
+    }
+
+    private static String buildRequest(String host, int port, String path, String scheme,
+                                       Map<String, String> headers) {
+        Map<String, String> merged = new LinkedHashMap<>();
+        merged.put("User-Agent", "VulnScan/1.0");
+        merged.put("Accept", "*/*");
+        merged.put("Connection", "close");
+        if (headers != null) {
+            merged.putAll(headers);
+        }
+        merged.put("Host", hostHeader(host, port, scheme));
+
+        StringBuilder request = new StringBuilder();
+        request.append("GET ").append(path == null || path.isBlank() ? "/" : path).append(" HTTP/1.1\r\n");
+        for (Map.Entry<String, String> header : merged.entrySet()) {
+            request.append(header.getKey()).append(": ").append(header.getValue()).append("\r\n");
+        }
+        request.append("\r\n");
+        return request.toString();
     }
 
     private static String readAll(InputStream in) throws IOException {

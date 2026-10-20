@@ -66,6 +66,7 @@ public class ServiceDetector {
                 }
 
                 return new ServiceFingerprint(
+                        target,
                         port,
                         probe.getProtocol(),
                         product,
@@ -78,7 +79,7 @@ public class ServiceDetector {
         }
 
         // Generic fallback based on port
-        return createGenericFingerprint(port, banner);
+        return createGenericFingerprint(target, port, banner);
     }
 
     private String extractVersion(Matcher matcher, int groupIndex) {
@@ -89,9 +90,10 @@ public class ServiceDetector {
         return version != null ? version.trim() : null;
     }
 
-    private ServiceFingerprint createGenericFingerprint(int port, String banner) {
+    private ServiceFingerprint createGenericFingerprint(String target, int port, String banner) {
         String protocol = guessProtocol(port);
         return new ServiceFingerprint(
+                target,
                 port,
                 protocol,
                 "unknown",

@@ -7,6 +7,7 @@ import java.util.List;
 
 public class ServiceFingerprint {
 
+    private final String target;
     private final int port;
     private final String protocol;
     private final String product;
@@ -17,6 +18,7 @@ public class ServiceFingerprint {
 
     @JsonCreator
     public ServiceFingerprint(
+            @JsonProperty("target") String target,
             @JsonProperty("port") int port,
             @JsonProperty("protocol") String protocol,
             @JsonProperty("product") String product,
@@ -24,6 +26,7 @@ public class ServiceFingerprint {
             @JsonProperty("confidence") double confidence,
             @JsonProperty("rawBanner") String rawBanner,
             @JsonProperty("tags") List<String> tags) {
+        this.target = target;
         this.port = port;
         this.protocol = protocol;
         this.product = product;
@@ -33,6 +36,18 @@ public class ServiceFingerprint {
         this.tags = tags;
     }
 
+    public ServiceFingerprint(
+            int port,
+            String protocol,
+            String product,
+            String version,
+            double confidence,
+            String rawBanner,
+            List<String> tags) {
+        this(null, port, protocol, product, version, confidence, rawBanner, tags);
+    }
+
+    public String getTarget() { return target; }
     public int getPort() { return port; }
     public String getProtocol() { return protocol; }
     public String getProduct() { return product; }

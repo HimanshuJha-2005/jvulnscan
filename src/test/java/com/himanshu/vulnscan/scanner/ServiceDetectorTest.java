@@ -165,4 +165,13 @@ class ServiceDetectorTest {
         assertTrue(fingerprints.stream().anyMatch(f -> f.getProduct().equals("OpenSSH")));
         assertTrue(fingerprints.stream().anyMatch(f -> f.getProduct().equals("MySQL")));
     }
+
+    @Test
+    void testFingerprintCarriesTarget() {
+        ServiceDetector detector = new ServiceDetector();
+        List<PortScanResult> results = List.of(PortScanResult.open(22, "SSH-2.0-OpenSSH_8.9p1"));
+        List<ServiceFingerprint> fingerprints = detector.detect("scanme.example", results);
+
+        assertEquals("scanme.example", fingerprints.get(0).getTarget());
+    }
 }

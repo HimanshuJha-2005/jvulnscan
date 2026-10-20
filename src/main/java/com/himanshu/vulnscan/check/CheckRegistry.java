@@ -51,7 +51,7 @@ public final class CheckRegistry {
     }
 
     private void loadBuiltInChecks() {
-        register(new Log4ShellCheck());
+        register(new Log4ShellCheck(activeChecks));
         register(new BlueKeepCheck());
         register(new AnonymousFtpCheck());
         register(new DefaultCredsCheck(activeChecks));

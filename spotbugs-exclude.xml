@@ -23,4 +23,15 @@
         <Class name="com.himanshu.vulnscan.persistence.ScanStateStore"/>
         <Bug pattern="CT_CONSTRUCTOR_THROW"/>
     </Match>
+    <!--
+        HttpProbe.startTls casts the socket returned by
+        SSLSocketFactory.createSocket(Socket, String, int, boolean) to
+        SSLSocket. That factory is documented to return an SSLSocket and the
+        cast is required by the API it overrides; no other factory is used.
+    -->
+    <Match>
+        <Class name="com.himanshu.vulnscan.check.net.HttpProbe"/>
+        <Method name="startTls"/>
+        <Bug pattern="BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"/>
+    </Match>
 </FindBugsFilter>

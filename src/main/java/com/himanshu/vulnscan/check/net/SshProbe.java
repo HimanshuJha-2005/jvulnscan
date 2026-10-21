@@ -100,7 +100,7 @@ public final class SshProbe {
 
             for (int i = 0; i < 5; i++) {
                 byte[] payload = readPacket(in);
-                if (payload == null) {
+                if (payload.length == 0) {
                     return Optional.empty();
                 }
                 if (payload.length > 0 && payload[0] == 20) {
@@ -294,23 +294,23 @@ public final class SshProbe {
         try {
             packetLength = data.readInt();
         } catch (IOException e) {
-            return null;
+            return new byte[0];
         }
         if (packetLength < 5 || packetLength > MAX_PACKET) {
-            return null;
+            return new byte[0];
         }
 
         byte[] packet = new byte[packetLength];
         try {
             data.readFully(packet);
         } catch (IOException e) {
-            return null;
+            return new byte[0];
         }
 
         int paddingLength = packet[0] & 0xFF;
         int payloadLength = packetLength - paddingLength - 1;
         if (payloadLength <= 0 || payloadLength > packet.length - 1) {
-            return null;
+            return new byte[0];
         }
         byte[] payload = new byte[payloadLength];
         System.arraycopy(packet, 1, payload, 0, payloadLength);

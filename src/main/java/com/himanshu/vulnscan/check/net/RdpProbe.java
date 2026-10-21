@@ -55,7 +55,7 @@ public final class RdpProbe {
 
             InputStream in = socket.getInputStream();
             byte[] header = readFully(in, 4);
-            if (header == null || (header[0] & 0xFF) != 3) {
+            if (header.length == 0 || (header[0] & 0xFF) != 3) {
                 return Optional.empty();
             }
             int length = ((header[2] & 0xFF) << 8) | (header[3] & 0xFF);
@@ -63,7 +63,7 @@ public final class RdpProbe {
                 return Optional.empty();
             }
             byte[] rest = readFully(in, length - 4);
-            if (rest == null) {
+            if (rest.length == 0) {
                 return Optional.empty();
             }
 
@@ -122,7 +122,7 @@ public final class RdpProbe {
         while (read < length) {
             int next = in.read(buffer, read, length - read);
             if (next == -1) {
-                return null;
+                return new byte[0];
             }
             read += next;
         }

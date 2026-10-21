@@ -29,6 +29,8 @@ public final class TlsProbe {
     private static final int TLS11 = 0x0302;
     private static final int TLS12 = 0x0303;
 
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private static final int RECORD_HANDSHAKE = 22;
     private static final int RECORD_ALERT = 21;
     private static final int EXT_SUPPORTED_VERSIONS = 0x002B;
@@ -113,7 +115,7 @@ public final class TlsProbe {
 
             for (int record = 0; record < 6; record++) {
                 byte[] header = readFully(in, 5);
-                if (header == null) {
+                if (header.length == 0) {
                     return Optional.empty();
                 }
                 int type = header[0] & 0xFF;
@@ -122,7 +124,7 @@ public final class TlsProbe {
                     return Optional.empty();
                 }
                 byte[] payload = readFully(in, length);
-                if (payload == null) {
+                if (payload.length == 0) {
                     return Optional.empty();
                 }
                 if (type == RECORD_ALERT) {
@@ -225,7 +227,7 @@ public final class TlsProbe {
         ByteArrayOutputStream body = new ByteArrayOutputStream();
         writeU16(body, maxVersion);
         byte[] random = new byte[32];
-        new SecureRandom().nextBytes(random);
+        RANDOM.nextBytes(random);
         body.write(random, 0, random.length);
         body.write(0); // empty session id
         writeU16(body, cipherSuites.size() * 2);
@@ -274,7 +276,7 @@ public final class TlsProbe {
         while (read < length) {
             int next = in.read(buffer, read, length - read);
             if (next == -1) {
-                return null;
+                return new byte[0];
             }
             read += next;
         }

@@ -80,6 +80,8 @@ Scan Options:
   --no-ping              Skip host discovery
   --no-banner-grab       Disable banner grabbing on open ports
   --no-progress          Disable progress bar
+  --active               Enable intrusive checks (default-credential attempts,
+                         JNDI payload injection). Authorised systems only.
 
 Config Subcommands:
   config get <key>              Get configuration value
@@ -109,16 +111,24 @@ List-Checks Options:
 
 | Check ID | CVE | Protocol | Severity | CVSS | Description |
 |----------|-----|----------|----------|------|-------------|
-| CVE-2021-44228 | CVE-2021-44228 | HTTP | CRITICAL | 10.0 | Log4Shell JNDI injection RCE |
-| CVE-2019-0708 | CVE-2019-0708 | RDP | CRITICAL | 9.8 | BlueKeep pre-auth RCE |
+| CVE-2021-44228 | CVE-2021-44228 | HTTP | CRITICAL | 10.0 | Log4Shell: version disclosure, plus opt-in JNDI callback proof |
+| CVE-2019-0708 | CVE-2019-0708 | RDP | CRITICAL | 9.8 | BlueKeep exposure: RDP still allows legacy security (no NLA) |
 | ANON-FTP | — | FTP | MEDIUM | 5.3 | Anonymous FTP login enabled |
-| DEFAULT-CREDS | — | Multi | HIGH | 7.5 | Default/weak credentials |
+| DEFAULT-CREDS | — | FTP | HIGH | 7.5 | Default credentials accepted (opt-in, `--active`) |
 | REDIS-UNAUTH | — | Redis | HIGH | 7.5 | Redis unauthorized access |
 | MONGO-OPEN | — | MongoDB | HIGH | 7.5 | MongoDB unauthenticated access |
-| SSL-TLS-WEAK | — | TLS | MEDIUM | 5.9 | Weak SSL/TLS configuration |
-| SSH-WEAK-ALGO | — | SSH | MEDIUM | 5.3 | SSH weak algorithms |
+| SSL-TLS-WEAK | — | TLS | MEDIUM | 5.9 | TLS 1.0/1.1 or legacy cipher suites accepted |
+| SSH-WEAK-ALGO | — | SSH | MEDIUM | 5.3 | SSH offers weak kex/host-key/cipher/MAC algorithms |
 | HTTP-SEC-HEADERS | — | HTTP | LOW | 3.7 | Missing security headers |
 | DIR-LISTING | — | HTTP | LOW | 3.7 | Directory listing enabled |
+
+Checks inspect live services rather than guessing from banners: SSH
+algorithms come from a real KEXINIT exchange, TLS from a ClientHello /
+ServerHello exchange, HTTP checks from a single redirect-free GET, BlueKeep
+from the RDP negotiation response, and Log4Shell from either a disclosed
+version or an opt-in callback. Default-credential attempts and payload
+injection stay disabled unless `--active` is passed.
+
 
 ## Output Formats
 
@@ -279,7 +289,7 @@ See [EXTENDING.md](EXTENDING.md) for complete guide.
 ## Testing
 
 ```bash
-# Unit tests (52 tests, all green)
+# Unit tests (107 tests, all green)
 mvn test
 
 # Full verify including integration tests (requires Docker for Testcontainers)
